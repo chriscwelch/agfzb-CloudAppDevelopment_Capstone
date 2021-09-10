@@ -1,11 +1,11 @@
   applications:
-  - name: djangoapp
+  - name: ccwibmcoursedjangoapp
     routes:
-      - route: $HOST.$DOMAIN
+      - route: ccwibmcoursedjangoapp.eu-gb.cf.appdomain.cloud
     memory: 128M
     buildpack: python_buildpack
-  - name: djangoapp-nginx
+  - name: ccwibmcoursedjangoapp-nginx
     routes:
-      - route: $HOST.$DOMAIN/static
+      - route: ccw-ibmcourse-djangoapp.eu-gb.cf.appdomain.cloud/static
     memory: 128M
     buildpack: staticfile_buildpack

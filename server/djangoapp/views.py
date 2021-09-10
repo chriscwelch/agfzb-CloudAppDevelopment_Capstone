@@ -16,14 +16,43 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 
+def render_some_template(request):
+    """
+    A function to render a static template.
+    """
+    # Context to serve
+    context = {}
+    if request.method == "GET":
+        return render(request, 'djangoapp/some-template.html', context)
+
+
+
 
 # Create an `about` view to render a static about page
-# def about(request):
-# ...
+def about(request):
+    """
+    A function to render the about page template
+    """
+    # Context to serve
+    context = {}
+
+    if request.method == 'GET':
+        return render(request, 'djangoapp/about.html', context)
 
 
 # Create a `contact` view to return a static contact page
-#def contact(request):
+def contact(request):
+    """
+    A function to render the contact us page template
+    """
+    # Context to serve
+    context = {}
+    
+    if request.method == 'GET':
+        return render(request, 'djangoapp/contact-us.html', context)
+
+
+
 
 # Create a `login_request` view to handle sign in request
 # def login_request(request):
