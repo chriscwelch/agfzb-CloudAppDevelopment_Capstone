@@ -29,6 +29,7 @@ APPEND_SLASH = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "ccwibmcoursedjangoapp.eu-gb.cf.appdomain.cloud"]
 
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 # Application definition
 
