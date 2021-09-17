@@ -31,6 +31,7 @@ urlpatterns = [
     path('dealer/<int:dealer_id>/', views.get_dealer_details, name='dealer_details'),
 
     # path for add a review view
+    path('dealer/add-review/<int:dealer_id>/', views.add_review, name='add_review'),
 
     # Static view
     path(route='some-template', view=views.render_some_template, name='some-template'),

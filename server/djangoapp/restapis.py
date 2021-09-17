@@ -4,6 +4,12 @@ import json
 from .models import CarDealer, CarMake, CarModel, DealerReview
 from requests.auth import HTTPBasicAuth
 
+# import json
+from ibm_watson import NaturalLanguageUnderstandingV1
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from ibm_watson.natural_language_understanding_v1 import Features, SentimentOptions
+from ibm_watson.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
+
 
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
@@ -13,30 +19,35 @@ def get_request(url, **kwargs):
     print("GET from {} ".format(url))
     
     try:
-        # # Call get method of requests library with URL and parameters
-        # response = requests.get(url, headers={'Content-Type': 'application/json'},
-        #                             params=kwargs)
-
-        # Updated for Auth
-        if kwargs.api_key:
-            params = dict()
-            params["text"] = kwargs["text"]
-            params["version"] = kwargs["version"]
-            params["features"] = kwargs["features"]
-            params["return_analyzed_text"] = kwargs["return_analyzed_text"]
-            response = requests.get(url, params=kwargs, headers={'Content-Type': 'application/json'},
-                            auth=HTTPBasicAuth('apikey', api_key))
-        else:
-            response = requests.get(url, headers={'Content-Type': 'application/json'},
+         response = requests.get(url, headers={'Content-Type': 'application/json'},
                                     params=kwargs)
 
     except Exception as error:
         print('api test error', error)
-        response = requests.get(url, headers={'Content-Type': 'application/json'},
-                                    params=kwargs)
-
         # If any error occurs
         print("Network exception occurred")
+    status_code = response.status_code
+    print("With status {} ".format(status_code))
+    json_data = json.loads(response.text)
+    return json_data
+
+
+def get_request_auth(url, params, api_key, **kwargs):
+    """
+    Function to get json data using an api key
+    """
+
+    print(kwargs)
+    print("GET from {} ".format(url))
+
+    try:
+        response = requests.get(url, params=kwargs, headers={'Content-Type': 'application/json'},
+                            auth=HTTPBasicAuth('apikey', api_key))
+
+    except Exception as error:
+        print('api test errror:', error)
+
+
     status_code = response.status_code
     print("With status {} ".format(status_code))
     json_data = json.loads(response.text)
@@ -46,6 +57,25 @@ def get_request(url, **kwargs):
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
+def post_request(url, json_payload, **kwargs):
+    """
+    Function to post reviews
+    """
+
+    try:
+        response = requests.get(url, params=kwargs, json=json_payload)
+
+    except Exception as error:
+        print("post error:", error)
+
+    status_code = response.status_code
+    print("With status {} ".format(status_code))
+    json_data = json.loads(response.text)
+    return json_data
+
+
+
+
 
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
@@ -196,13 +226,53 @@ def analyze_review_sentiments(dealerreview):
     Function to get the sentiment of a review
     """
 
+    api_key = "s_TkKnbbGIAZ9n74bm47iQ3xij3xrtoDquIoRLUWhWfa"
 
+    url = "https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/5a78596d-caca-44ca-a7e2-514384bae147"
+
+    version = "2020-08-01" 
+
+    feature = "sentiment"
+
+    return_analyzed_text = True 
 
     headers = {'Content-Type': 'application/json'}
 
+    params = dict()
+
+    # params["text"] = kwargs["text"]
+    # params["version"] = kwargs["version"]
+    # params["features"] = kwargs["features"]
+    # params["return_analyzed_text"] = kwargs["return_analyzed_text"]
+
+    params["text"] = dealerreview
+    params["version"] = version
+    params["features"] = feature
+    params["return_analyzed_text"] = True
+
     try:
-        sentiment = get_request(url, params=params, headers=headers,
-        auth=HTTPBasicAuth('apikey', api_key))
+        # sentiment = get_request_auth(url, params, api_key)
+
+        apikey = "s_TkKnbbGIAZ9n74bm47iQ3xij3xrtoDquIoRLUWhWfa"
+
+        authenticator = IAMAuthenticator(apikey)
+        natural_language_understanding = NaturalLanguageUnderstandingV1(
+            version='2021-08-01',
+            authenticator=authenticator
+        )
+
+        url = "https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/5a78596d-caca-44ca-a7e2-514384bae147"
+
+        natural_language_understanding.set_service_url(url)
+
+        response = natural_language_understanding.analyze(text="great service!", language="en",
+        features=Features(sentiment=SentimentOptions(document=True))).get_result()
+
+        sentiment = response["sentiment"]['document']['label']
+
+        print('sentiment:', sentiment)
+
+        return sentiment
 
     except Exception as error:
         print('Sentiment error:', error)

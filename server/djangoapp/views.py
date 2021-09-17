@@ -167,6 +167,7 @@ def get_dealer_details(request, dealer_id):
     Function to return dealer details.
     """
     context = {}
+    review_list = []
     if request.method == "GET":
         url = "https://141b0828.eu-gb.apigw.appdomain.cloud/api/review"
 
@@ -175,14 +176,27 @@ def get_dealer_details(request, dealer_id):
             reviews = get_dealer_reviews_from_cf(url, dealer_id)
             print('dealer reviews:', reviews)
 
-            # Concat all dealer's reviews
-            dealer_reviews = ' '.join([review.review for review in reviews])
+            # # Concat all dealer's reviews
+            # dealer_reviews = ' '.join([review.review for review in reviews])
 
-            dealer_sentiment = ' '.join([review.sentiment for review in reviews])
+            # dealer_sentiment = ' '.join([review.sentiment for review in reviews])
 
-            context['reviews'] = reviews
+            # context['reviews'] = dealer_reviews
 
-            context['sentiment'] = sentiment
+            # context['sentiment'] = dealer_sentiment
+
+            for review in reviews:
+                print('this review:', review.review)
+                print('this sentiment:', review.sentiment)
+                review_obj = {}
+                review_obj['review'] = review.review
+                review_obj['sentiment'] = review.sentiment
+
+                print(review_obj)
+                context[review.id] = review_obj
+                
+            print(context)
+
             return HttpResponse(context)
 
         except Exception as error:
@@ -193,4 +207,38 @@ def get_dealer_details(request, dealer_id):
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
 # ...
+def add_review(request, dealer_id):
+    """
+    Function to add a review
+    """
+
+    context= {}
+
+    try:
+
+        url = "https://141b0828.eu-gb.apigw.appdomain.cloud/api/add-review"
+
+        # check if authenticated
+        if request.user.is_authenticated:
+            review = {}
+            # review["time"] = datetime.utcnow().isoformat()
+            review["dealership"] = dealer_id
+            review["review"] = "This is a great car dealer"
+
+            json_payload = {}
+            json_payload["review"] = review
+
+            posted_request = post_request(url, json_payload, dealer_id=dealer_id)
+
+            print('posted_request')
+
+            return HttpResponse({"request:":"Has been made"})
+
+        else:
+            return HttpResponse("Authentication failed")
+    
+    except Exception as error:
+        print('add_review error:', error)
+
+        return HttpResponse(context)
 
