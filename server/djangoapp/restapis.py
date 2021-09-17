@@ -1,7 +1,7 @@
 import requests
 import json
 # import related models here
-from .models import CarDealer, CarMake, CarModel
+from .models import CarDealer, CarMake, CarModel, DealerReview
 from requests.auth import HTTPBasicAuth
 
 
@@ -11,11 +11,30 @@ from requests.auth import HTTPBasicAuth
 def get_request(url, **kwargs):
     print(kwargs)
     print("GET from {} ".format(url))
+    
     try:
-        # Call get method of requests library with URL and parameters
+        # # Call get method of requests library with URL and parameters
+        # response = requests.get(url, headers={'Content-Type': 'application/json'},
+        #                             params=kwargs)
+
+        # Updated for Auth
+        if kwargs.api_key:
+            params = dict()
+            params["text"] = kwargs["text"]
+            params["version"] = kwargs["version"]
+            params["features"] = kwargs["features"]
+            params["return_analyzed_text"] = kwargs["return_analyzed_text"]
+            response = requests.get(url, params=kwargs, headers={'Content-Type': 'application/json'},
+                            auth=HTTPBasicAuth('apikey', api_key))
+        else:
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
+                                    params=kwargs)
+
+    except Exception as error:
+        print('api test error', error)
         response = requests.get(url, headers={'Content-Type': 'application/json'},
                                     params=kwargs)
-    except:
+
         # If any error occurs
         print("Network exception occurred")
     status_code = response.status_code
@@ -85,16 +104,107 @@ def get_dealers_from_cf(url, **kwargs):
 
 
 
+def get_dealer_by_st(url, st):
+    """
+    Function to return dealers info.
+    """
+    results = []
+    # Call get_request with a URL parameter
+    json_result = get_request(url, st)
+    if json_result:
+        # TEST
+        # print('json_result:', json_result['dealerships'][0])
+        
+        # Get the row list in JSON as dealers
+        dealers = json_result['dealerships']
+        #TEST
+        # print('dealers', dealers)
+
+        try:
+            for dealer in dealers:
+                dealer_obj = CarDealer(address=dealer["address"],
+                                        city=dealer["city"],
+                                        full_name=dealer["full_name"],
+                                        id=dealer["id"],
+                                        lat=dealer["lat"],
+                                        long=dealer["long"],
+                                        short_name=dealer["short_name"],
+                                        st=dealer["st"],
+                                        zip=dealer["zip"])
+                
+                # print('dealer_obj', dealer_obj)
+                results.append(dealer_obj)
+
+        except Exception as error:
+            print("Append dealer results error:", error)
+
+    return results
+
+
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
 # def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Parse JSON results into a DealerView object list
+
+def get_dealer_reviews_from_cf(url, dealerId):
+    """
+    Function to get reviews for a specific dealer
+    """
+    results = []
+    # Call get_request with a URL parameter
+    json_result = get_request(url, id=dealerId)
+
+    print('Get_dealer_reviews_from_cf has kicked off.')
+    # test if exists
+    if json_result:
+        # TEST
+        print('json_result:', json_result)
+        
+        # # Get the row list in JSON as dealers
+        reviews = json_result['results']
+
+        try:
+            for review in reviews:
+                review_obj = DealerReview(dealership=review['dealership'],
+                    name=review['name'],
+                    purchase=review['purchase'],
+                    review=review['review'],
+                    purchase_date=review['purchase_date'],
+                    car_make=review['car_make'],
+                    car_model=review['car_model'],
+                    car_year=review['car_year'],
+                    sentiment= analyze_review_sentiments(review['review']),
+                    id=review['id'])
+
+                results.append(review_obj)
+
+        except Exception as error:
+            print("Append dealer results error:", error)
+
+
+    print('returned details:', results)
+    return results    
+
 
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
+def analyze_review_sentiments(dealerreview):
+    """
+    Function to get the sentiment of a review
+    """
 
+
+
+    headers = {'Content-Type': 'application/json'}
+
+    try:
+        sentiment = get_request(url, params=params, headers=headers,
+        auth=HTTPBasicAuth('apikey', api_key))
+
+    except Exception as error:
+        print('Sentiment error:', error)
 
 

@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarMake, CarModel, CarDealer
-from .restapis import get_request, get_dealers_from_cf
+from .restapis import get_request, get_dealers_from_cf, get_dealer_reviews_from_cf
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -142,13 +142,15 @@ def get_dealerships(request):
 
             # Get dealers from the URL
             dealerships = get_dealers_from_cf(url)
-            print('dealerships from get_dealership view:', dealerships)
+            # print('dealerships from get_dealership view:', dealerships)
 
             # Concat all dealers' short name
             dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
 
             # Return a list of dealer short name
-            return HttpResponse(dealer_names)
+            context["dealers"] = dealerships 
+            return HttpResponse(dealer_names, context)
+            # return render(request, 'djangoapp/index.html', context)
         
         except Exception as error:
             print("Error:", error)
@@ -160,6 +162,33 @@ def get_dealerships(request):
 # Create a `get_dealer_details` view to render the reviews of a dealer
 # def get_dealer_details(request, dealer_id):
 # ...
+def get_dealer_details(request, dealer_id):
+    """
+    Function to return dealer details.
+    """
+    context = {}
+    if request.method == "GET":
+        url = "https://141b0828.eu-gb.apigw.appdomain.cloud/api/review"
+
+        try:
+            print('get_dealer_details has kicked off.')
+            reviews = get_dealer_reviews_from_cf(url, dealer_id)
+            print('dealer reviews:', reviews)
+
+            # Concat all dealer's reviews
+            dealer_reviews = ' '.join([review.review for review in reviews])
+
+            dealer_sentiment = ' '.join([review.sentiment for review in reviews])
+
+            context['reviews'] = reviews
+
+            context['sentiment'] = sentiment
+            return HttpResponse(context)
+
+        except Exception as error:
+            print("get_dealer_details error:", error)
+            return HttpResponse(context)
+
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
