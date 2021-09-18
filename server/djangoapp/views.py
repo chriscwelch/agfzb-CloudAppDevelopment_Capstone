@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarMake, CarModel, CarDealer
-from .restapis import get_request, get_dealers_from_cf, get_dealer_reviews_from_cf
+from .restapis import get_request, get_dealers_from_cf, get_dealer_reviews_from_cf, post_request
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -233,24 +233,56 @@ def add_review(request, dealer_id):
 
         # check if authenticated
         if request.user.is_authenticated:
-            review = {}
-            # review["time"] = datetime.utcnow().isoformat()
-            review["dealership"] = dealer_id
-            review["review"] = "This is a great car dealer"
+            if request.method=="GET":
+                # Handle the rendering of the page
+                context['dealer_id'] = dealer_id
 
-            json_payload = {}
-            json_payload["review"] = review
+                dealers_url = "https://141b0828.eu-gb.apigw.appdomain.cloud/api/dealership?id=" + str(dealer_id)
+                dealer = get_dealers_from_cf(dealers_url)[0]
 
+                print("add review dealer:", dealer.full_name)
 
-            # Need to test if the method == "POST"
-            # posted_request = post_request(url, json_payload, dealer_id=dealer_id)
+                print(dealer)
+                context['dealer'] = dealer
 
-            # print('posted_request')
+                cars = CarMake.objects.all()
 
-            context['dealer_id'] = dealer_id
+                context['cars'] = cars
 
-            return render(request, 'djangoapp/add_review.html', context)
-            # return HttpResponse({"request:":"Has been made"})
+                print('cars:', cars)
+
+                return render(request, 'djangoapp/add_review.html', context)
+
+            if request.method=="POST":
+                print('form submitted process kicked off')
+
+                print('request body', request.POST)
+
+                submitted_form = request.POST
+
+                print('this review', submitted_form['content'])
+
+                review = {}
+                # review["time"] = datetime.utcnow().isoformat()
+                review["dealership"] = dealer_id
+                review["review"] = submitted_form['content']
+                review["car_make"] = submitted_form['car-make']
+
+                json_payload = {}
+                json_payload["review"] = review
+
+                # print('submitted review', review)
+
+                url = "https://141b0828.eu-gb.apigw.appdomain.cloud/api/add-review"
+
+                posted_request = post_request(url, json_payload, dealer_id=dealer_id)
+
+                print('posted_request')
+
+            
+                # return HttpResponse({"request:":"Has been made"})
+
+                return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
 
         else:
             # return render(request, 'djangoapp/dealer_details.html', context)
