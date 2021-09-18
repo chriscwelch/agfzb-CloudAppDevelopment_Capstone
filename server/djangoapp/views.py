@@ -149,8 +149,10 @@ def get_dealerships(request):
 
             # Return a list of dealer short name
             context["dealers"] = dealerships 
-            return HttpResponse(dealer_names, context)
-            # return render(request, 'djangoapp/index.html', context)
+
+            print('Should return dealers')
+            # return HttpResponse(dealer_names, context)
+            return render(request, 'djangoapp/index.html', context)
         
         except Exception as error:
             print("Error:", error)
