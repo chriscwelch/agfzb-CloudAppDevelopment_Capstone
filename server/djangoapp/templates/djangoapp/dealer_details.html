@@ -9,10 +9,20 @@
 
     <body>
 
-    <!--Add a nav bar here -->
+        <!--Add a nav bar here -->
+        {% include "./components/nav.html" %}
 
-    <!-- Add reviews as cards -->
+        <!-- Add reviews as cards -->
 
+        {% include "./components/footer.html" %}
     </body>
+
+
+    <script>
+        const conditionalLinksHolder = document.querySelector('#conditional-links')
+        conditionalLinksHolder.innerHTML = "{% include './components/conditional_links.html' %}"
+
+
+    </script>
 
 </html>

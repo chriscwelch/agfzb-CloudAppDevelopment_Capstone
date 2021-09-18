@@ -199,11 +199,17 @@ def get_dealer_details(request, dealer_id):
                 
             print(context)
 
-            return HttpResponse(context)
+            context['dealer_id'] = dealer_id
+
+
+            # return HttpResponse(context)
+            return render(request, 'djangoapp/dealer_details.html', context)
+
 
         except Exception as error:
             print("get_dealer_details error:", error)
-            return HttpResponse(context)
+            # return HttpResponse(context)
+            return render(request, 'djangoapp/dealer_details.html', context)
 
 
 # Create a `add_review` view to submit a review
