@@ -187,20 +187,25 @@ def get_dealer_details(request, dealer_id):
 
             # context['sentiment'] = dealer_sentiment
 
+            review_list = []
+
             for review in reviews:
                 print('this review:', review.review)
                 print('this sentiment:', review.sentiment)
                 review_obj = {}
                 review_obj['review'] = review.review
                 review_obj['sentiment'] = review.sentiment
+                review_obj['car_make'] = review.car_make
+                review_obj['car_model'] = review.car_model
+                review_obj['car_year'] = review.car_year
 
-                print(review_obj)
-                context[review.id] = review_obj
+                print('review obj:', review_obj)
+                review_list.append(review_obj)
                 
-            print(context)
+            context['reviews'] = review_list
 
             context['dealer_id'] = dealer_id
-
+            print('context:', context)
 
             # return HttpResponse(context)
             return render(request, 'djangoapp/dealer_details.html', context)
@@ -236,17 +241,23 @@ def add_review(request, dealer_id):
             json_payload = {}
             json_payload["review"] = review
 
-            posted_request = post_request(url, json_payload, dealer_id=dealer_id)
 
-            print('posted_request')
+            # Need to test if the method == "POST"
+            # posted_request = post_request(url, json_payload, dealer_id=dealer_id)
 
-            return HttpResponse({"request:":"Has been made"})
+            # print('posted_request')
+
+            context['dealer_id'] = dealer_id
+
+            return render(request, 'djangoapp/add_review.html', context)
+            # return HttpResponse({"request:":"Has been made"})
 
         else:
-            return HttpResponse("Authentication failed")
+            # return render(request, 'djangoapp/dealer_details.html', context)
+            return render(request, 'djangoapp/add_review.html', context)
     
     except Exception as error:
         print('add_review error:', error)
 
-        return HttpResponse(context)
+        return render(request, 'djangoapp/add_review.html', context)
 
