@@ -1,5 +1,6 @@
 import requests
 import json
+import numpy as np
 # import related models here
 from .models import CarDealer, CarMake, CarModel, DealerReview
 from requests.auth import HTTPBasicAuth
@@ -208,7 +209,7 @@ def get_dealer_reviews_from_cf(url, dealerId):
                     car_make=review['car_make'],
                     car_model=review['car_model'],
                     car_year=review['car_year'],
-                    sentiment= analyze_review_sentiments(review['review']),
+                    sentiment=analyze_review_sentiments(review['review']),
                     id=review['id'])
 
                 results.append(review_obj)
@@ -257,6 +258,9 @@ def analyze_review_sentiments(dealerreview):
 
     try:
         # sentiment = get_request_auth(url, params, api_key)
+        print("---------------------------------------------")
+        print("This is the text to be analyzed for sentiment:", dealerreview)
+        print("---------------------------------------------")
 
         apikey = "s_TkKnbbGIAZ9n74bm47iQ3xij3xrtoDquIoRLUWhWfa"
 
@@ -269,6 +273,7 @@ def analyze_review_sentiments(dealerreview):
         url = "https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/5a78596d-caca-44ca-a7e2-514384bae147"
 
         natural_language_understanding.set_service_url(url)
+
 
         response = natural_language_understanding.analyze(text=dealerreview, language="en",
         features=Features(sentiment=SentimentOptions(document=True))).get_result()

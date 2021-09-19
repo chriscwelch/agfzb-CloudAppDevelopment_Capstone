@@ -177,6 +177,7 @@ def get_dealer_details(request, dealer_id):
             print('get_dealer_details has kicked off.')
             reviews = get_dealer_reviews_from_cf(url, dealer_id)
             print('dealer reviews:', reviews)
+            print('user name:', request.user.username)
 
             # # Concat all dealer's reviews
             # dealer_reviews = ' '.join([review.review for review in reviews])
@@ -227,6 +228,9 @@ def add_review(request, dealer_id):
 
     context= {}
 
+    username = request.user.username
+    print("username:", username)
+
     try:
 
         url = "https://141b0828.eu-gb.apigw.appdomain.cloud/api/add-review"
@@ -261,12 +265,19 @@ def add_review(request, dealer_id):
                 submitted_form = request.POST
 
                 print('this review', submitted_form['content'])
+                print('submitted form:', submitted_form)
 
                 review = {}
                 # review["time"] = datetime.utcnow().isoformat()
+                review["id"] = 42
+                review["name"] = username
                 review["dealership"] = dealer_id
                 review["review"] = submitted_form['content']
                 review["car_make"] = submitted_form['car-make']
+                review["car_model"] = submitted_form['car-model']
+                review["car_year"] = submitted_form['car-year']
+                review["purchase"] = "true" #submitted_form['purchasecheck']
+                review["purchase_date"] = submitted_form['purchasedate']
 
                 json_payload = {}
                 json_payload["review"] = review
