@@ -63,7 +63,12 @@ def post_request(url, json_payload, **kwargs):
     """
 
     try:
-        response = requests.get(url, params=kwargs, json=json_payload)
+        print('json_payload:', json_payload)
+        # response = requests.get(url, params=kwargs, json=json_payload)
+        headers = {"Content-Type": "application/json", "X-Debug-Mode":"true"}
+        response = requests.request("POST", url, data=json_payload, headers=headers)
+
+        print('response:', response)
 
     except Exception as error:
         print("post error:", error)
@@ -265,7 +270,7 @@ def analyze_review_sentiments(dealerreview):
 
         natural_language_understanding.set_service_url(url)
 
-        response = natural_language_understanding.analyze(text="great service!", language="en",
+        response = natural_language_understanding.analyze(text=dealerreview, language="en",
         features=Features(sentiment=SentimentOptions(document=True))).get_result()
 
         sentiment = response["sentiment"]['document']['label']

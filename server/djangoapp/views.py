@@ -271,6 +271,8 @@ def add_review(request, dealer_id):
                 json_payload = {}
                 json_payload["review"] = review
 
+                json_payload = json.dumps(json_payload)
+
                 # print('submitted review', review)
 
                 url = "https://141b0828.eu-gb.apigw.appdomain.cloud/api/add-review"
